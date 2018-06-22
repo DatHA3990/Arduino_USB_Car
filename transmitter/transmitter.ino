@@ -5,7 +5,15 @@
 #define JOY_X A0
 #define JOY_Y A1
 
-byte dataIncoming[4];
+#define LEFT_MOTOR 3
+#define RIGHT_MOTOR 5
+
+#define LEFT_DIRECTION 2
+#define RIGHT_DIRECTION 4
+
+#define LIMIT_SWITCH 6
+
+byte dataIncoming[5];
 byte dataSend[2];
 
 RF24 radio (7, 8);
@@ -21,6 +29,11 @@ void setup() {
   radio.openWritingPipe(sendAdress);
   radio.openReadingPipe(1, readAdress);
   radio.setPALevel(RF24_PA_MIN);
+
+  pinMode(LEFT_DIRECTION, OUTPUT);
+  pinMode(RIGHT_DIRECTION, OUTPUT);
+
+  pinMode(LIMIT_SWITCH, OUTPUT);
 }
 
 void loop() {
@@ -36,7 +49,7 @@ void loop() {
     radio.startListening();
     previousTime = millis();
   }
-  
+
   if (radio.available()) {
     radio.read(&dataIncoming, sizeof(dataIncoming));
 
@@ -47,4 +60,12 @@ void loop() {
     }
     Serial.println();
   }
+
+  analogWrite(LEFT_MOTOR, dataIncoming[0]);
+  analogWrite(RIGHT_MOTOR, dataIncoming[1]);
+
+  digitalWrite(LEFT_DIRECTION, dataIncoming[2]);
+  digitalWrite(RIGHT_DIRECTION, dataIncoming[3]);
+
+  digitalWrite(LIMIT_SWITCH, dataIncoming[4]);
 }

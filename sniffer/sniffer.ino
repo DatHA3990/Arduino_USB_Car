@@ -1,4 +1,4 @@
-#include <SPI.h>
+ #include <SPI.h>
 #include <nRF24L01.h>
 #include <RF24.h>
 
@@ -9,7 +9,7 @@ const int receiverAdress = 0xF0F0F0F0BB;
 
 
 byte dataTrasmitter[2];
-byte dataReceiver[4];
+byte dataReceiver[5];
 
 void setup() {
   Serial.begin(9600);

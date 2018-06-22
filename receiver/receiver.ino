@@ -2,14 +2,16 @@
 #include <nRF24L01.h>
 #include <RF24.h>
 
-#define LEFT_MOTOR 5
-#define RIGHT_MOTOR 6
+#define LEFT_MOTOR 3
+#define RIGHT_MOTOR 5
 
 #define LEFT_DIRECTION 2
-#define RIGHT_DIRECTION 3
+#define RIGHT_DIRECTION 4
+
+#define LIMIT_SWITCH 6
 
 byte dataIncoming[2];
-byte dataSend[4];
+byte dataSend[5];
 int values[2];
 
 #define JOY_NULL 15
@@ -23,11 +25,10 @@ const int sendAdress = 0xF0F0F0F0BB;
 unsigned long long previousTime = 0;
 
 void setup() {
-  pinMode(LEFT_MOTOR, OUTPUT);
-  pinMode(RIGHT_MOTOR, OUTPUT);
-
   pinMode(LEFT_DIRECTION, OUTPUT);
   pinMode(RIGHT_DIRECTION, OUTPUT);
+
+  pinMode(LIMIT_SWITCH, INPUT);
 
   Serial.begin(9600);
 
@@ -60,10 +61,13 @@ void loop() {
   values[0] = constrain(y + x, -255, 255);
   values[1] = constrain(y - x, -255, 255);
 
+  bool buttonVal = digitalRead(LIMIT_SWITCH);
+
   dataSend[0] = byte(abs(values[0]));
   dataSend[1] = byte(abs(values[1]));
   dataSend[2] = values[0] < 0;
   dataSend[3] = values[1] < 0;
+  dataSend[4] = buttonVal;
 
   if (millis() - previousTime >= 20) {
     radio.stopListening();
