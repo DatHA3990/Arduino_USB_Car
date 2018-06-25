@@ -2,10 +2,9 @@
 #include <nRF24L01.h>
 #include <RF24.h>
 
-RF24 radio (7, 8);
+#include "config.h"
 
-const int transmitterAdress = 0xF0F0F0F0AA;
-const int receiverAdress = 0xF0F0F0F0BB;
+RF24 radio (7, 8);
 
 uint8_t pipeTx = 1;
 uint8_t pipeRx = 2;
@@ -15,38 +14,41 @@ void setup() {
 
   radio.begin();
 
-  radio.openReadingPipe(pipeTx, transmitterAdress);
-  radio.openReadingPipe(pipeRx, receiverAdress);
+  radio.openReadingPipe(pipeTx, transmitterAddress);
+  radio.openReadingPipe(pipeRx, receiverAddress);
   radio.startListening();
 
   radio.setPALevel(RF24_PA_MIN);
-  Serial.println("test");
 }
 
 void loop() {
   byte pipe;
 
-  byte data[32] = {NULL};
+  // check if the radio is available
+  // this func will set the var pipe to the ...
+  // ... number of the pipe that is available
   if (radio.available(&pipe)) {
-    radio.read(data, 32);
-    Serial.print(pipe);
-    Serial.print("  :  ");
-
+    
     if (pipe == pipeTx) {
+      byte data[dataLenTx];
+      radio.read(data, dataLenTx);
       Serial.print("tx : ");
-      for (int i = 0; i < 2; i++) {
+      for (int i = 0; i < dataLenTx; i++) {
         Serial.print(data[i]);
         Serial.print(", ");
       }
+      Serial.println();
     }
 
-    if (pipe == pipeRx) {
+    else if (pipe == pipeRx) {
+      byte data[dataLenRx];
+      radio.read(data, dataLenRx);
       Serial.print("rx : ");
-      for (int i = 0; i < 5; i++) {
+      for (int i = 0; i < dataLenRx; i++) {
         Serial.print(data[i]);
         Serial.print(", ");
       }
+      Serial.println();
     }
   }
-  Serial.println();
 }

@@ -2,6 +2,8 @@
 #include <nRF24L01.h>
 #include <RF24.h>
 
+#include "config.h"
+
 #define LEFT_MOTOR 3
 #define RIGHT_MOTOR 5
 
@@ -10,17 +12,13 @@
 
 #define LIMIT_SWITCH 6
 
-byte dataIncoming[2];
-byte dataSend[5];
+byte dataIncoming[dataLenTx];
+byte dataSend[dataLenRx];
 int values[2];
 
 #define JOY_NULL 15
 
 RF24 radio (7, 8);
-
-const int readAdress = 0xF0F0F0F0AA;
-const int sendAdress = 0xF0F0F0F0BB;
-
 
 unsigned long long previousTime = 0;
 
@@ -34,18 +32,18 @@ void setup() {
 
 
   radio.begin();
-  radio.openReadingPipe(1, readAdress);
-  radio.openWritingPipe(sendAdress);
+  radio.openReadingPipe(1, transmitterAddress);
+  radio.openWritingPipe(receiverAddress);
   radio.setPALevel(RF24_PA_MIN);
   radio.startListening();
 }
 
 void loop() {
   if (radio.available()) {
-    radio.read(&dataIncoming, sizeof(dataIncoming));
+    radio.read(&dataIncoming, dataLenTx);
 
     Serial.print("From Tx : ");
-    for (int i = 0; i < sizeof(dataIncoming); i++) {
+    for (int i = 0; i < dataLenTx; i++) {
       Serial.print(dataIncoming[i]);
       Serial.print(", ");
     }
@@ -71,7 +69,7 @@ void loop() {
 
   if (millis() - previousTime >= 20) {
     radio.stopListening();
-    radio.write(&dataSend, sizeof(dataSend));
+    radio.write(&dataSend, dataLenRx);
     radio.startListening();
     previousTime = millis();
   }
