@@ -4,18 +4,15 @@
 
 #include "config.h"
 
-RF24 radio (7, 8);
-
-uint8_t pipeTx = 1;
-uint8_t pipeRx = 2;
+RF24 radio (CE_PIN, CSN_PIN);
 
 void setup() {
   Serial.begin(9600);
 
   radio.begin();
 
-  radio.openReadingPipe(pipeTx, transmitterAddress);
-  radio.openReadingPipe(pipeRx, receiverAddress);
+  radio.openReadingPipe(PIPE_TX, transmitterAddress);
+  radio.openReadingPipe(PIPE_RX, receiverAddress);
   radio.startListening();
 
   radio.setPALevel(RF24_PA_MIN);
@@ -28,27 +25,35 @@ void loop() {
   // this func will set the var pipe to the ...
   // ... number of the pipe that is available
   if (radio.available(&pipe)) {
-    
-    if (pipe == pipeTx) {
-      byte data[dataLenTx];
-      radio.read(data, dataLenTx);
-      Serial.print("tx : ");
-      for (int i = 0; i < dataLenTx; i++) {
-        Serial.print(data[i]);
-        Serial.print(", ");
-      }
-      Serial.println();
-    }
 
-    else if (pipe == pipeRx) {
-      byte data[dataLenRx];
-      radio.read(data, dataLenRx);
-      Serial.print("rx : ");
-      for (int i = 0; i < dataLenRx; i++) {
-        Serial.print(data[i]);
-        Serial.print(", ");
-      }
-      Serial.println();
+    // switch case depending on the pipe
+    switch (pipe) {
+
+      // transmitter's pipe
+      case PIPE_TX : {
+          byte data[DATA_LEN_TX];
+          radio.read(data, DATA_LEN_TX);
+          Serial.print("tx : ");
+          for (int i = 0; i < DATA_LEN_TX; i++) {
+            Serial.print(data[i]);
+            Serial.print(", ");
+          }
+          Serial.println();
+          break;
+        }
+
+      // receiver's pipe
+      case PIPE_RX: {
+          byte data[DATA_LEN_RX];
+          radio.read(data, DATA_LEN_RX);
+          Serial.print("rx : ");
+          for (int i = 0; i < DATA_LEN_RX; i++) {
+            Serial.print(data[i]);
+            Serial.print(", ");
+          }
+          Serial.println();
+          break;
+        }
     }
   }
 }
